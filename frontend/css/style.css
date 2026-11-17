@@ -1,0 +1,553 @@
+
+/* ===================================
+   GENERAL STYLING
+=================================== */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: #f1f5f9;
+    color: #1e293b;
+    min-height: 100vh;
+}
+
+
+/* ===================================
+   HEADER
+=================================== */
+
+.header {
+    background: #12345a;
+    color: white;
+    padding: 20px 6%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.brand-icon {
+    font-size: 35px;
+}
+
+.brand h1 {
+    font-size: 23px;
+    letter-spacing: 2px;
+}
+
+.brand p {
+    font-size: 12px;
+    color: #cbd5e1;
+    margin-top: 4px;
+}
+
+.version {
+    background: #ffffff20;
+    padding: 7px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+}
+
+
+/* ===================================
+   MAIN CONTAINER
+=================================== */
+
+.container {
+    width: 100%;
+    max-width: 650px;
+    margin: 40px auto;
+    padding: 0 18px;
+}
+
+.panel {
+    background: white;
+    padding: 28px;
+    border-radius: 14px;
+    box-shadow: 0 5px 20px #00000008;
+}
+
+.section-heading {
+    margin-bottom: 25px;
+}
+
+.section-heading h2 {
+    font-size: 23px;
+    margin-bottom: 8px;
+}
+
+.section-heading p {
+    color: #64748b;
+    font-size: 14px;
+}
+
+.landing {
+    max-width: 720px;
+}
+
+.landing-panel {
+    padding: 38px;
+}
+
+.landing-links {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.landing-links a {
+    display: flex;
+    min-height: 52px;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    text-decoration: none;
+}
+
+.secondary-btn {
+    background: #e2e8f0;
+    color: #12345a;
+    padding: 14px;
+    border-radius: 7px;
+    font-weight: bold;
+}
+
+.landing-panel .privacy-note {
+    margin-top: 24px;
+}
+
+
+/* ===================================
+   AUTHENTICATION
+=================================== */
+
+.auth-tabs {
+    display: flex;
+    border-bottom: 1px solid #e2e8f0;
+    margin-bottom: 25px;
+}
+
+.tab {
+    width: 50%;
+    padding: 12px;
+    border: none;
+    background: white;
+    cursor: pointer;
+    color: #64748b;
+    font-weight: bold;
+}
+
+.tab.active {
+    color: #2563eb;
+    border-bottom: 3px solid #2563eb;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+form label {
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+form input {
+    padding: 13px;
+    border: 1px solid #cbd5e1;
+    border-radius: 7px;
+    margin-bottom: 20px;
+    outline: none;
+    font-size: 14px;
+}
+
+form input:focus {
+    border-color: #2563eb;
+}
+
+
+/* ===================================
+   BUTTONS
+=================================== */
+
+button {
+    font-family: inherit;
+}
+
+.primary-btn {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.primary-btn:hover {
+    background: #1d4ed8;
+}
+
+.logout-btn {
+    background: #fee2e2;
+    color: #b91c1c;
+    border: none;
+    padding: 10px 14px;
+    border-radius: 7px;
+    cursor: pointer;
+}
+
+
+/* ===================================
+   WELCOME CARD
+=================================== */
+
+.welcome-card {
+    background: #12345a;
+    color: white;
+    padding: 23px;
+    border-radius: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.welcome-card h2 {
+    margin: 6px 0;
+}
+
+.welcome-card p {
+    color: #cbd5e1;
+    font-size: 13px;
+}
+
+.small-text {
+    font-size: 10px !important;
+    letter-spacing: 1px;
+}
+
+
+/* ===================================
+   TRACKING STATUS
+=================================== */
+
+.tracking-panel {
+    padding: 25px;
+}
+
+.status-card {
+    background: #f1f5f9;
+    padding: 17px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 25px;
+}
+
+.status-card p {
+    font-size: 13px;
+    color: #64748b;
+    margin-top: 5px;
+}
+
+.status-dot {
+    height: 13px;
+    width: 13px;
+    border-radius: 50%;
+    background: #94a3b8;
+    flex-shrink: 0;
+}
+
+.status-dot.active {
+    background: #16a34a;
+    box-shadow: 0 0 0 5px #dcfce7;
+}
+
+
+/* ===================================
+   COORDINATES
+=================================== */
+
+.coordinates {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 25px;
+}
+
+.coordinate-box {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 16px;
+    border-radius: 8px;
+    overflow-wrap: anywhere;
+}
+
+.coordinate-box span {
+    display: block;
+    color: #64748b;
+    font-size: 10px;
+    margin-bottom: 9px;
+    letter-spacing: 1px;
+}
+
+.coordinate-box strong {
+    font-size: 17px;
+    color: #12345a;
+}
+
+
+/* ===================================
+   TRACKING CONTROLS
+=================================== */
+
+.tracking-controls {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 30px;
+}
+
+.start-btn,
+.stop-btn {
+    flex: 1;
+    padding: 15px 10px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    color: white;
+    font-weight: bold;
+}
+
+.start-btn {
+    background: #16a34a;
+}
+
+.stop-btn {
+    background: #dc2626;
+}
+
+button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+
+/* ===================================
+   TRACKING INFORMATION
+=================================== */
+
+.information {
+    border-top: 1px solid #e2e8f0;
+    padding-top: 20px;
+}
+
+.information h3 {
+    margin-bottom: 15px;
+}
+
+.information p {
+    font-size: 13px;
+    margin-bottom: 12px;
+    color: #64748b;
+}
+
+.information strong {
+    color: #12345a;
+}
+
+
+/* ===================================
+   MESSAGES
+=================================== */
+
+.message {
+    font-size: 13px;
+    margin-top: 15px;
+    color: #2563eb;
+}
+
+.message.error {
+    color: #dc2626;
+}
+
+.message.success {
+    color: #16a34a;
+}
+
+
+/* ===================================
+   PRIVACY
+=================================== */
+
+.privacy-note {
+    background: #e0f2fe;
+    border-left: 4px solid #0284c7;
+    padding: 18px;
+    margin-top: 20px;
+    border-radius: 7px;
+}
+
+.privacy-note p {
+    font-size: 13px;
+    color: #475569;
+    margin-top: 7px;
+}
+
+.sharing-panel {
+    margin-top: 20px;
+}
+
+.geofence-panel {
+    margin-top: 20px;
+}
+
+.geofence-panel h3 {
+    margin: 20px 0 12px;
+}
+
+#geofence-map {
+    height: 340px;
+    border: 1px solid #cbd5e1;
+    border-radius: 9px;
+    z-index: 1;
+}
+
+.geofence-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.geofence-controls button {
+    border: 0;
+    border-radius: 7px;
+    padding: 10px 12px;
+    cursor: pointer;
+}
+
+.geofence-controls button:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+}
+
+.geofence-controls .secondary-btn {
+    padding: 10px 12px;
+}
+
+.geofence-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    border-top: 1px solid #e2e8f0;
+    padding: 12px 0;
+}
+
+.geofence-item p {
+    color: #475569;
+    font-size: 13px;
+}
+
+.sharing-panel h3 {
+    margin: 20px 0 12px;
+}
+
+.shared-user {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-top: 1px solid #e2e8f0;
+}
+
+.shared-user p {
+    overflow-wrap: anywhere;
+    color: #475569;
+    font-size: 13px;
+}
+
+.revoke-btn {
+    flex-shrink: 0;
+    background: #fee2e2;
+    color: #b91c1c;
+    border: none;
+    padding: 9px 12px;
+    border-radius: 7px;
+    cursor: pointer;
+}
+
+
+/* ===================================
+   UTILITIES
+=================================== */
+
+.hidden {
+    display: none !important;
+}
+
+footer {
+    text-align: center;
+    padding: 25px;
+    color: #64748b;
+    font-size: 12px;
+}
+
+
+/* ===================================
+   MOBILE RESPONSIVENESS
+=================================== */
+
+@media (max-width: 480px) {
+
+    .header {
+        padding: 17px;
+    }
+
+    .container {
+        margin: 22px auto;
+    }
+
+    .panel {
+        padding: 20px;
+    }
+
+    .coordinates {
+        gap: 8px;
+    }
+
+    .coordinate-box {
+        padding: 12px;
+    }
+
+    .coordinate-box strong {
+        font-size: 14px;
+    }
+
+    .tracking-controls {
+        flex-direction: column;
+    }
+
+    .landing-panel {
+        padding: 22px;
+    }
+
+    .landing-links {
+        grid-template-columns: 1fr;
+    }
+
+}

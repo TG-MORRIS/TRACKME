@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=TRACKME Phone Test
+Comment=Start TRACKME for phone testing on the local Wi-Fi
+Exec=/home/tg_morris/projects/TRACKME/run_trackme_phone.sh
+Path=/home/tg_morris/projects/TRACKME
+Icon=web-browser
+Terminal=true
+Categories=Development;

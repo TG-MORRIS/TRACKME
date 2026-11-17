@@ -1,0 +1,326 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>TRACKME | Mobile Tracking</title>
+
+    <link rel="stylesheet" href="css/style.css?v=2">
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    >
+</head>
+
+<body>
+
+    <header class="header">
+        <div class="brand">
+            <span class="brand-icon">📍</span>
+            <div>
+                <h1>TRACKME</h1>
+                <p>Real-Time GPS Tracking System</p>
+            </div>
+        </div>
+
+        <span class="version">v1.0</span>
+    </header>
+
+
+    <main class="container">
+
+        <!-- AUTHENTICATION SECTION -->
+
+        <section id="auth-section" class="panel">
+
+            <div class="section-heading">
+                <h2>Welcome to TRACKME</h2>
+                <p>Sign in or create an account to begin.</p>
+            </div>
+
+            <div class="auth-tabs">
+                <button id="login-tab" class="tab active">
+                    Login
+                </button>
+
+                <button id="register-tab" class="tab">
+                    Register
+                </button>
+            </div>
+
+
+            <!-- LOGIN FORM -->
+
+            <form id="login-form">
+
+                <label>Email Address</label>
+
+                <input
+                    type="email"
+                    id="login-email"
+                    placeholder="Enter your email"
+                    required
+                >
+
+                <label>Password</label>
+
+                <input
+                    type="password"
+                    id="login-password"
+                    placeholder="Enter your password"
+                    required
+                >
+
+                <button type="submit" class="primary-btn">
+                    Login
+                </button>
+
+            </form>
+
+
+            <!-- REGISTRATION FORM -->
+
+            <form id="register-form" class="hidden">
+
+                <label>Full Name</label>
+
+                <input
+                    type="text"
+                    id="register-name"
+                    placeholder="Enter your full name"
+                    required
+                >
+
+                <label>Email Address</label>
+
+                <input
+                    type="email"
+                    id="register-email"
+                    placeholder="Enter your email"
+                    required
+                >
+
+                <label>Password</label>
+
+                <input
+                    type="password"
+                    id="register-password"
+                    placeholder="Minimum 8 characters"
+                    minlength="8"
+                    required
+                >
+
+                <button type="submit" class="primary-btn">
+                    Create Account
+                </button>
+
+            </form>
+
+            <p id="auth-message" class="message"></p>
+
+        </section>
+
+
+        <!-- TRACKING SECTION -->
+
+        <section id="tracking-section" class="hidden">
+
+            <div class="welcome-card">
+
+                <div>
+                    <p class="small-text">SIGNED IN AS</p>
+                    <h2 id="user-name">User</h2>
+                    <p id="user-email"></p>
+                </div>
+
+                <button id="logout-btn" class="logout-btn">
+                    Logout
+                </button>
+
+            </div>
+
+
+            <div class="panel tracking-panel">
+
+                <div class="section-heading">
+                    <h2>Location Tracking</h2>
+                    <p>Share your current location with authorized viewers.</p>
+                </div>
+
+
+                <div class="status-card">
+
+                    <span id="status-indicator" class="status-dot"></span>
+
+                    <div>
+                        <strong id="tracking-status">
+                            Tracking inactive
+                        </strong>
+
+                        <p id="status-description">
+                            Start tracking to share your location.
+                        </p>
+                    </div>
+
+                </div>
+
+
+                <div class="coordinates">
+
+                    <div class="coordinate-box">
+                        <span>LATITUDE</span>
+                        <strong id="latitude">--</strong>
+                    </div>
+
+                    <div class="coordinate-box">
+                        <span>LONGITUDE</span>
+                        <strong id="longitude">--</strong>
+                    </div>
+
+                    <div class="coordinate-box">
+                        <span>GPS ACCURACY</span>
+                        <strong id="accuracy">--</strong>
+                    </div>
+
+                    <div class="coordinate-box">
+                        <span>SPEED</span>
+                        <strong id="speed">--</strong>
+                    </div>
+
+                </div>
+
+
+                <div class="tracking-controls">
+
+                    <button id="start-btn" class="start-btn">
+                        ▶ Start Tracking
+                    </button>
+
+                    <button id="stop-btn" class="stop-btn" disabled>
+                        ■ Stop Tracking
+                    </button>
+
+                </div>
+
+
+                <div class="information">
+
+                    <h3>Tracking Information</h3>
+
+                    <p>
+                        Session ID:
+                        <strong id="session-id">None</strong>
+                    </p>
+
+                    <p>
+                        Last Update:
+                        <strong id="last-update">Not available</strong>
+                    </p>
+
+                    <p>
+                        Coordinates Submitted:
+                        <strong id="points-count">0</strong>
+                    </p>
+
+                </div>
+
+                <p id="tracking-message" class="message"></p>
+
+            </div>
+
+
+            <div class="privacy-note">
+                <strong>Privacy notice</strong>
+                <p>
+                    Your location is shared only through approved
+                    permissions. While tracking is active, GPS updates are
+                    submitted about every 10 seconds. You can stop tracking at
+                    any time.
+                </p>
+            </div>
+
+            <div class="panel geofence-panel">
+                <div class="section-heading">
+                    <h2>My Geofences</h2>
+                    <p>Draw private zones to get enter and exit alerts while your tracking session is active.</p>
+                </div>
+
+                <form id="geofence-form">
+                    <label for="geofence-name">Geofence name</label>
+                    <input
+                        type="text"
+                        id="geofence-name"
+                        minlength="2"
+                        maxlength="100"
+                        placeholder="Home, office, or another place"
+                        required
+                    >
+                    <div class="geofence-controls">
+                        <button type="button" id="draw-geofence-btn" class="secondary-btn">
+                            Start drawing
+                        </button>
+                        <button type="button" id="undo-geofence-point-btn" class="secondary-btn" disabled>
+                            Undo point
+                        </button>
+                        <button type="button" id="clear-geofence-draft-btn" class="secondary-btn" disabled>
+                            Clear
+                        </button>
+                    </div>
+                    <p id="geofence-draw-help" class="small-text">
+                        Start drawing, then tap at least three points on the map. Finish the outline to save it.
+                    </p>
+                    <button type="submit" id="save-geofence-btn" class="primary-btn" disabled>
+                        Save Geofence
+                    </button>
+                </form>
+
+                <p id="geofence-message" class="message" aria-live="polite"></p>
+                <div id="geofence-map" aria-label="Map for drawing your geofence"></div>
+                <h3>Saved zones</h3>
+                <div id="geofence-list">
+                    <p>Loading your geofences...</p>
+                </div>
+            </div>
+
+            <div class="panel sharing-panel">
+                <div class="section-heading">
+                    <h2>Location Sharing</h2>
+                    <p>Choose who can view your location. You can revoke access at any time.</p>
+                </div>
+
+                <form id="share-form">
+                    <label for="share-email">Viewer email address</label>
+                    <input
+                        type="email"
+                        id="share-email"
+                        placeholder="friend@example.com"
+                        required
+                    >
+                    <button type="submit" class="primary-btn">Grant Location Access</button>
+                </form>
+
+                <p id="share-message" class="message" aria-live="polite"></p>
+
+                <h3>People with access</h3>
+                <div id="shared-users">
+                    <p>Loading sharing permissions...</p>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <footer>
+        <p>TRACKME © 2026 | GIS Tracking System</p>
+    </footer>
+
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="js/tracking.js?v=4"></script>
+
+</body>
+</html>

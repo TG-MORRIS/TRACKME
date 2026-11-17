@@ -1,0 +1,173 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>TRACKME | GIS Dashboard</title>
+
+    <link rel="stylesheet" href="css/dashboard.css">
+
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    >
+
+</head>
+
+<body>
+
+<header class="dashboard-header">
+
+    <div>
+        <h1>📍 TRACKME</h1>
+        <p>Consent-Based Real-Time GIS Dashboard</p>
+    </div>
+
+    <div class="header-right">
+
+        <span id="connection-status">Connecting...</span>
+
+        <button id="logout-btn">Logout</button>
+
+    </div>
+
+</header>
+
+
+<main class="dashboard-layout">
+
+
+    <!-- SIDEBAR -->
+
+    <aside class="sidebar">
+
+        <section class="login-panel" id="login-panel">
+
+            <h2>Viewer Sign In</h2>
+
+            <form id="dashboard-login">
+
+                <input
+                    type="email"
+                    id="email"
+                    placeholder="Email address"
+                    required
+                >
+
+                <input
+                    type="password"
+                    id="password"
+                    placeholder="Password"
+                    required
+                >
+
+                <button type="submit">Login</button>
+
+            </form>
+
+            <p id="login-message"></p>
+
+        </section>
+
+
+        <section id="dashboard-content" class="hidden">
+
+            <h2>Tracking Overview</h2>
+
+            <div class="stat-card">
+
+                <span>Authorized Users</span>
+
+                <strong id="total-users">0</strong>
+
+            </div>
+
+            <div class="stat-card">
+
+                <span>Currently Tracking</span>
+
+                <strong id="active-users">0</strong>
+
+            </div>
+
+
+            <h3>Authorized Users</h3>
+
+            <div id="user-list">
+
+                <p>Loading users...</p>
+
+            </div>
+
+
+            <div class="selected-user">
+
+                <h3>Selected User</h3>
+
+                <p id="selected-name">None selected</p>
+
+                <p id="selected-location">No location available</p>
+
+                <p id="selected-distance">Distance: --</p>
+
+            </div>
+
+            <button id="history-btn" disabled>
+                Show Movement History
+            </button>
+
+            <button id="clear-route-btn">
+                Clear Map Route
+            </button>
+            <hr>
+
+            <h3>🔔 Geofence Alerts</h3>
+
+            <div id="geofence-alerts">
+            <p>No geofence alerts yet.</p>
+            </div>
+            </section>
+
+    </aside>
+
+
+    <!-- MAP AREA -->
+
+    <section class="map-container">
+
+        <div class="map-toolbar">
+
+            <strong>Live Location Map</strong>
+
+            <span>Refresh: 10 seconds</span>
+
+        </div>
+
+        <div id="map"></div>
+
+        <div class="map-legend">
+
+            <span>🟢 Active tracking</span>
+
+            <span>⚪ Inactive tracking</span>
+
+        </div>
+
+    </section>
+
+
+</main>
+
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script src="js/dashboard.js?v=4"></script>
+
+</body>
+
+</html>

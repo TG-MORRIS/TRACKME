@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=TRACKME
+Comment=Start TRACKME and open it in your browser
+Exec=/home/tg_morris/projects/TRACKME/run_trackme.sh
+Path=/home/tg_morris/projects/TRACKME
+Icon=web-browser
+Terminal=true
+Categories=Development;
