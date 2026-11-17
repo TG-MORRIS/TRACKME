@@ -1,6 +1,8 @@
 
 const API_BASE = window.TRACKME_API_BASE ||
-    `${window.location.protocol}//${window.location.hostname}:8000`;
+    (window.location.port === "5500"
+        ? `${window.location.protocol}//${window.location.hostname}:8000`
+        : window.location.origin);
 
 let accessToken = null;
 let map;
