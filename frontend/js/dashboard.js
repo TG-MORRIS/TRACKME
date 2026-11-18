@@ -297,8 +297,10 @@ async function loadAuthorizedUsers() {
         document.getElementById("active-users").textContent = activeCount;
 
         connectionStatus.textContent = "Connected";
+        connectionStatus.style.color = "green";
     } catch (error) {
-        connectionStatus.textContent = "Update failed";
+        connectionStatus.textContent = `Update failed: ${error.message}`;
+        connectionStatus.style.color = "red";
         console.error("Could not load authorized users:", error);
     }
 }
