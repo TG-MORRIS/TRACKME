@@ -95,6 +95,36 @@ see locations, movement history, and geofence alerts shared with them.
 Browser geolocation requires the device owner's permission and a secure browser
 context. Localhost is treated as secure by browsers; deployments must use HTTPS.
 
+## Deploy on Render
+
+The root `render.yaml` defines one Render web service. It serves the frontend
+and API from the same HTTPS origin, so the browser can use the deployed service
+URL for both. The Blueprint does not create a database: this project uses
+MySQL-specific SQL and spatial functions, so configure it with your external
+TiDB/MySQL-compatible database rather than a Render Postgres URL.
+
+1. Make sure the schema is initialized in TiDB. Check that the TiDB cluster
+   supports the spatial functions used by TRACKME, including
+   `ST_GeomFromText`, `ST_IsValid`, and `ST_Contains`.
+2. Push the project to a Git provider connected to Render, then create a
+   **Blueprint** from the repository. Render reads `render.yaml`, installs
+   `backend/requirements.txt`, and deploys the service.
+3. When prompted, set `DATABASE_URL` to the TiDB provider's MySQL-compatible
+   connection URL. Use its TLS-enabled connection details and URL-encode
+   reserved characters in credentials. Do not use a `127.0.0.1` database URL:
+   on Render, that would refer to the Render service itself.
+4. Render generates `SECRET_KEY` from the Blueprint. Keep `backend/.env` out
+   of Git; do not put database credentials or signing keys in `render.yaml`.
+5. After deployment, open the service URL. `/health` should report the database
+   as connected. If it does not, check the Render logs, TiDB network/IP access
+   settings, and the connection URL.
+
+The Blueprint uses Render's free web-service plan for testing; free services
+can spin down when idle. Use an always-on plan for reliable, continuously
+available tracking. The app allows account registration, so use consenting
+test users and avoid sensitive real-world tracking until the deployment's
+access and data-retention policies are reviewed.
+
 ## Test on a phone without public hosting
 
 The PC and phone must be connected to the same Wi-Fi. On Linux, launch

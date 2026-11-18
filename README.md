@@ -17,6 +17,9 @@ On Linux, after completing setup, double-click `TRACKME.desktop` on your Desktop
 to start both servers and open the app in your browser. Keep the terminal open
 while using TRACKME; closing it stops the servers.
 
+To deploy the frontend and API together on Render, follow the [Render setup
+guide](docs/SETUP.md#deploy-on-render).
+
 For phone GPS testing on the same Wi-Fi, use `TRACKME Phone Test.desktop`.
 Open the local certificate download link printed in the terminal on each test
 phone, install it, then open the printed HTTPS address. See [the setup guide](docs/SETUP.md)

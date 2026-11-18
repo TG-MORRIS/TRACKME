@@ -1,8 +1,11 @@
 import logging
+from pathlib import Path
 
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, HTTPException, Depends, status, Query
+from fastapi.responses import FileResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, EmailStr, Field, field_validator, model_validator
 from sqlalchemy.orm import Session
 from sqlalchemy import text
@@ -25,6 +28,7 @@ from app.security import (
 # =========================================
 
 logger = logging.getLogger(__name__)
+FRONTEND_DIR = Path(__file__).resolve().parents[2] / "frontend"
 
 app = FastAPI(
     title="TRACKME API",
@@ -194,12 +198,7 @@ def check_location_access(db, owner_id, viewer_id):
 
 @app.get("/")
 def home():
-
-    return {
-        "message": "Welcome to TRACKME API",
-        "status": "running",
-        "version": "1.0.0"
-    }
+    return FileResponse(FRONTEND_DIR / "index.html")
 
 
 @app.get("/health")
@@ -1095,3 +1094,10 @@ def accessible_users(
     return {
         "users": [dict(user) for user in results]
     }
+
+
+app.mount(
+    "/",
+    StaticFiles(directory=FRONTEND_DIR, html=True),
+    name="frontend"
+)
