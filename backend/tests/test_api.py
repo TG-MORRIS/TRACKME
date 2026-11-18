@@ -9,6 +9,7 @@ from app.main import (
     LocationCreate,
     SharingGrant,
     UserRegister,
+    accessible_users,
     check_geofences,
     check_location_access,
     current_tracking,
@@ -121,6 +122,27 @@ class SchemaTests(unittest.TestCase):
                     {"latitude": 0.3, "longitude": 32.5},
                 ],
             )
+
+
+class SharingTests(unittest.TestCase):
+    def test_accessible_users_uses_tidb_compatible_latest_session_join(self):
+        expected_user = {
+            "user_id": 4,
+            "full_name": "Alex Example",
+            "email": "alex@example.com",
+            "session_id": 11,
+            "tracking_status": "active",
+        }
+        db = FakeDatabase(FakeResult(rows=[expected_user]))
+
+        result = accessible_users(db, current_user={"user_id": 8})
+
+        self.assertEqual(result["users"], [expected_user])
+        query, params = db.statements[0]
+        self.assertIn("MAX(session_id)", query)
+        self.assertIn("GROUP BY user_id", query)
+        self.assertNotIn("ON ts.session_id = (", query)
+        self.assertEqual(params, {"viewer_id": 8})
 
 
 class AuthenticationTests(unittest.TestCase):

@@ -1074,14 +1074,15 @@ def accessible_users(
             JOIN users u
                 ON u.user_id = sp.user_id
 
+            LEFT JOIN (
+                SELECT user_id, MAX(session_id) AS session_id
+                FROM tracking_sessions
+                GROUP BY user_id
+            ) latest_session
+                ON latest_session.user_id = u.user_id
+
             LEFT JOIN tracking_sessions ts
-                ON ts.session_id = (
-                    SELECT ts2.session_id
-                    FROM tracking_sessions ts2
-                    WHERE ts2.user_id = u.user_id
-                    ORDER BY ts2.session_id DESC
-                    LIMIT 1
-                )
+                ON ts.session_id = latest_session.session_id
 
             WHERE sp.viewer_id = :viewer_id
             AND sp.status = 'approved'
