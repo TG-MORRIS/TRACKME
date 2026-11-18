@@ -157,7 +157,7 @@ registerForm.addEventListener("submit", async (event) => {
 
         showMessage("auth-message", "Creating your account...");
 
-        const result = await apiRequest(
+        await apiRequest(
             "/auth/register",
             "POST",
             {
@@ -167,17 +167,17 @@ registerForm.addEventListener("submit", async (event) => {
             }
         );
 
-        showMessage(
-            "auth-message",
-            "Account created successfully! Please login.",
-            "success"
-        );
-
         registerForm.reset();
 
         loginTab.click();
 
         document.getElementById("login-email").value = email;
+
+        showMessage(
+            "auth-message",
+            "Account created successfully! Please login.",
+            "success"
+        );
 
     } catch (error) {
 
@@ -220,9 +220,9 @@ loginForm.addEventListener("submit", async (event) => {
         );
 
         accessToken = result.access_token;
-        currentUser = result.user;
         sessionStorage.setItem("trackme_token", accessToken);
 
+        currentUser = await apiRequest("/users/me");
         await openTrackingInterface();
 
     } catch (error) {

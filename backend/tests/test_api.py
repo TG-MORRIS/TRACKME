@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import patch
 
 from fastapi import HTTPException
 from pydantic import ValidationError
@@ -12,15 +13,25 @@ from app.main import (
     check_location_access,
     current_tracking,
     delete_geofence,
+    register_user,
 )
 
 
 class FakeResult:
-    def __init__(self, *, first=None, rows=None, scalar=None, rowcount=0):
+    def __init__(
+        self,
+        *,
+        first=None,
+        rows=None,
+        scalar=None,
+        rowcount=0,
+        lastrowid=None,
+    ):
         self.first_value = first
         self.rows = rows or []
         self.scalar_value = scalar
         self.rowcount = rowcount
+        self.lastrowid = lastrowid
 
     def mappings(self):
         return self
@@ -110,6 +121,32 @@ class SchemaTests(unittest.TestCase):
                     {"latitude": 0.3, "longitude": 32.5},
                 ],
             )
+
+
+class AuthenticationTests(unittest.TestCase):
+    def test_registration_commits_user_and_returns_created_id(self):
+        db = FakeDatabase(FakeResult(lastrowid=12))
+
+        with patch("app.main.hash_password", return_value="hashed-password"):
+            result = register_user(
+                UserRegister(
+                    full_name="Alex Example",
+                    email="alex@example.com",
+                    password="long-enough-password",
+                ),
+                db,
+            )
+
+        self.assertTrue(db.committed)
+        self.assertEqual(result["user_id"], 12)
+        self.assertEqual(
+            db.statements[0][1],
+            {
+                "name": "Alex Example",
+                "email": "alex@example.com",
+                "password": "hashed-password",
+            },
+        )
 
 
 class PermissionTests(unittest.TestCase):
