@@ -1,4 +1,5 @@
 import logging
+import re
 from pathlib import Path
 
 from fastapi.middleware.cors import CORSMiddleware
@@ -462,6 +463,154 @@ def stop_tracking(
         "status": "stopped"
     }
 
+
+def _orientation(first, second, third):
+    return (
+        (second[0] - first[0]) * (third[1] - first[1])
+        - (second[1] - first[1]) * (third[0] - first[0])
+    )
+
+
+def _point_on_segment(point, start, end):
+    epsilon = 1e-12
+    return (
+        abs(_orientation(start, end, point)) <= epsilon
+        and min(start[0], end[0]) - epsilon <= point[0] <= max(start[0], end[0]) + epsilon
+        and min(start[1], end[1]) - epsilon <= point[1] <= max(start[1], end[1]) + epsilon
+    )
+
+
+def _segments_intersect(first_start, first_end, second_start, second_end):
+    epsilon = 1e-12
+    orientations = (
+        _orientation(first_start, first_end, second_start),
+        _orientation(first_start, first_end, second_end),
+        _orientation(second_start, second_end, first_start),
+        _orientation(second_start, second_end, first_end),
+    )
+
+    if (
+        (
+            orientations[0] > epsilon
+            and orientations[1] < -epsilon
+            or orientations[0] < -epsilon
+            and orientations[1] > epsilon
+        )
+        and (
+            orientations[2] > epsilon
+            and orientations[3] < -epsilon
+            or orientations[2] < -epsilon
+            and orientations[3] > epsilon
+        )
+    ):
+        return True
+
+    return (
+        (abs(orientations[0]) <= epsilon and
+         _point_on_segment(second_start, first_start, first_end))
+        or (abs(orientations[1]) <= epsilon and
+            _point_on_segment(second_end, first_start, first_end))
+        or (abs(orientations[2]) <= epsilon and
+            _point_on_segment(first_start, second_start, second_end))
+        or (abs(orientations[3]) <= epsilon and
+            _point_on_segment(first_end, second_start, second_end))
+    )
+
+
+def _is_valid_polygon(vertices):
+    points = vertices[:-1] if vertices[0] == vertices[-1] else vertices
+    count = len(points)
+    if count < 3 or len(set(points)) < 3:
+        return False
+
+    area = sum(
+        points[index][0] * points[(index + 1) % count][1]
+        - points[(index + 1) % count][0] * points[index][1]
+        for index in range(count)
+    )
+    if abs(area) <= 1e-12:
+        return False
+
+    for first_index in range(count):
+        first_start = points[first_index]
+        first_end = points[(first_index + 1) % count]
+        if first_start == first_end:
+            return False
+
+        for second_index in range(first_index + 1, count):
+            if (
+                (first_index + 1) % count == second_index
+                or (second_index + 1) % count == first_index
+            ):
+                continue
+
+            if _segments_intersect(
+                first_start,
+                first_end,
+                points[second_index],
+                points[(second_index + 1) % count],
+            ):
+                return False
+
+    return True
+
+
+def _parse_polygon_boundary(boundary):
+    match = re.fullmatch(
+        r"\s*POLYGON\s*\(\(\s*(.*?)\s*\)\)\s*",
+        boundary or "",
+        re.IGNORECASE,
+    )
+    if not match:
+        raise ValueError("Stored geofence boundary is not a polygon")
+
+    try:
+        vertices = [
+            tuple(map(float, coordinate.split()))
+            for coordinate in match.group(1).split(",")
+        ]
+    except ValueError as error:
+        raise ValueError("Stored geofence boundary has invalid coordinates") from error
+
+    if (
+        any(len(vertex) != 2 for vertex in vertices)
+        or len(vertices) < 4
+        or vertices[0] != vertices[-1]
+        or any(
+            not -180 <= longitude <= 180 or not -90 <= latitude <= 90
+            for longitude, latitude in vertices
+        )
+        or not _is_valid_polygon(vertices)
+    ):
+        raise ValueError("Stored geofence boundary is not a valid polygon")
+
+    return vertices
+
+
+def _point_in_polygon(longitude, latitude, vertices):
+    point = (longitude, latitude)
+    inside = False
+
+    for index in range(len(vertices) - 1):
+        start = vertices[index]
+        end = vertices[index + 1]
+
+        if _point_on_segment(point, start, end):
+            return False
+
+        if (start[1] > latitude) != (end[1] > latitude):
+            crossing_longitude = (
+                (end[0] - start[0])
+                * (latitude - start[1])
+                / (end[1] - start[1])
+                + start[0]
+            )
+            if longitude < crossing_longitude:
+                inside = not inside
+
+    return inside
+
+
 # =========================================
 # GEOFENCE DETECTION
 # =========================================
@@ -475,12 +624,10 @@ def check_geofences(db, session_id, owner_id, latitude, longitude):
             SELECT
                 geofence_id,
                 name,
-                ST_Contains(
-                    boundary,
-                    ST_SRID(POINT(:longitude, :latitude), 4326)
-                ) AS is_inside
+                boundary
             FROM geofences
             WHERE created_by = :owner_id
+            AND boundary IS NOT NULL
         """),
         {
             "owner_id": owner_id,
@@ -494,7 +641,8 @@ def check_geofences(db, session_id, owner_id, latitude, longitude):
     for fence in geofences:
 
         geofence_id = fence["geofence_id"]
-        is_inside = bool(fence["is_inside"])
+        vertices = _parse_polygon_boundary(fence["boundary"])
+        is_inside = _point_in_polygon(longitude, latitude, vertices)
 
         # Find the most recent alert for this session
         # and geofence.
@@ -797,10 +945,11 @@ def list_geofences(
             SELECT
                 geofence_id,
                 name,
-                ST_AsText(boundary, 'axis-order=long-lat') AS boundary,
+                boundary,
                 created_at
             FROM geofences
             WHERE created_by = :user_id
+            AND boundary IS NOT NULL
             ORDER BY name
         """),
         {"user_id": current_user["user_id"]}
@@ -819,35 +968,22 @@ def create_geofence(
         (vertex.longitude, vertex.latitude)
         for vertex in data.vertices
     ]
-    if vertices[0] != vertices[-1]:
-        vertices.append(vertices[0])
-
-    coordinates = ", ".join(f"{longitude} {latitude}" for longitude, latitude in vertices)
-    boundary_wkt = f"POLYGON(({coordinates}))"
-    parameters = {"boundary": boundary_wkt}
-
-    is_valid = db.execute(
-        text("""
-            SELECT ST_IsValid(
-                ST_GeomFromText(:boundary, 4326, 'axis-order=long-lat')
-            )
-        """),
-        parameters
-    ).scalar()
-    if not is_valid:
+    if not _is_valid_polygon(vertices):
         raise HTTPException(
             status_code=422,
             detail="The geofence must form a valid, non-crossing polygon"
         )
 
+    if vertices[0] != vertices[-1]:
+        vertices.append(vertices[0])
+
+    coordinates = ", ".join(f"{longitude} {latitude}" for longitude, latitude in vertices)
+    boundary_wkt = f"POLYGON(({coordinates}))"
+
     result = db.execute(
         text("""
             INSERT INTO geofences (name, boundary, created_by)
-            VALUES (
-                :name,
-                ST_GeomFromText(:boundary, 4326, 'axis-order=long-lat'),
-                :user_id
-            )
+            VALUES (:name, :boundary, :user_id)
         """),
         {
             "name": data.name,

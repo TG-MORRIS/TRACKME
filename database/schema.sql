@@ -98,7 +98,7 @@ CREATE TABLE geofences (
 
     name VARCHAR(100) NOT NULL,
 
-    boundary POLYGON NOT NULL SRID 4326,
+    boundary TEXT NULL,
 
     created_by INT NOT NULL,
 
@@ -106,9 +106,8 @@ CREATE TABLE geofences (
 
     FOREIGN KEY (created_by)
         REFERENCES users(user_id)
-        ON DELETE CASCADE,
+        ON DELETE CASCADE
 
-    SPATIAL INDEX idx_geofence_boundary (boundary)
 );
 
 -- =================================

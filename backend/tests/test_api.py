@@ -13,7 +13,9 @@ from app.main import (
     check_geofences,
     check_location_access,
     current_tracking,
+    create_geofence,
     delete_geofence,
+    list_geofences,
     register_user,
     save_location,
 )
@@ -245,16 +247,19 @@ class TrackingTests(unittest.TestCase):
         self.assertEqual(result["latest_location"], None)
 
     def test_geofence_entry_and_exit_are_recorded(self):
-        for previous_event, inside, expected in (
-            (None, True, "ENTER"),
-            ("ENTER", False, "EXIT"),
+        for previous_event, longitude, expected in (
+            (None, 32.5, "ENTER"),
+            ("ENTER", 32.7, "EXIT"),
         ):
             with self.subTest(expected=expected):
                 db = FakeDatabase(
                     FakeResult(rows=[{
                         "geofence_id": 3,
                         "name": "Office",
-                        "is_inside": inside,
+                        "boundary": (
+                            "POLYGON((32.4 0.2, 32.6 0.2, 32.6 0.4, "
+                            "32.4 0.4, 32.4 0.2))"
+                        ),
                     }]),
                     FakeResult(scalar=previous_event),
                     FakeResult(),
@@ -265,34 +270,91 @@ class TrackingTests(unittest.TestCase):
                     session_id=11,
                     owner_id=4,
                     latitude=0.3,
-                    longitude=32.5,
+                    longitude=longitude,
                 )
 
                 self.assertEqual(alerts[0]["event_type"], expected)
                 self.assertEqual(db.statements[0][1]["owner_id"], 4)
                 self.assertIn("INSERT INTO geofence_alerts", db.statements[-1][0])
                 self.assertEqual(db.statements[-1][1]["event_type"], expected)
+                self.assertNotIn("ST_Contains", db.statements[0][0])
 
     def test_staying_inside_does_not_repeat_entry_alert(self):
         db = FakeDatabase(
             FakeResult(rows=[{
                 "geofence_id": 3,
                 "name": "Office",
-                "is_inside": True,
+                "boundary": (
+                    "POLYGON((32.4 0.2, 32.6 0.2, 32.6 0.4, "
+                    "32.4 0.4, 32.4 0.2))"
+                ),
             }]),
             FakeResult(scalar="ENTER"),
         )
 
         alerts = check_geofences(
-            db,
-            session_id=11,
-            owner_id=4,
-            latitude=0.3,
-            longitude=32.5,
+            db, session_id=11, owner_id=4, latitude=0.3, longitude=32.5
         )
 
         self.assertEqual(alerts, [])
         self.assertEqual(len(db.statements), 2)
+
+    def test_create_geofence_stores_text_boundary(self):
+        db = FakeDatabase(FakeResult(lastrowid=7))
+        data = GeofenceCreate(
+            name="Office",
+            vertices=[
+                {"latitude": 0.2, "longitude": 32.4},
+                {"latitude": 0.2, "longitude": 32.6},
+                {"latitude": 0.4, "longitude": 32.6},
+                {"latitude": 0.4, "longitude": 32.4},
+            ],
+        )
+
+        result = create_geofence(data, db, current_user={"user_id": 4})
+
+        query, params = db.statements[0]
+        self.assertIn("INSERT INTO geofences", query)
+        self.assertNotIn("ST_GeomFromText", query)
+        self.assertEqual(
+            params["boundary"],
+            "POLYGON((32.4 0.2, 32.6 0.2, 32.6 0.4, "
+            "32.4 0.4, 32.4 0.2))",
+        )
+        self.assertEqual(result["geofence_id"], 7)
+        self.assertTrue(db.committed)
+
+    def test_create_geofence_rejects_self_intersecting_polygon(self):
+        db = FakeDatabase()
+        data = GeofenceCreate(
+            name="Bow tie",
+            vertices=[
+                {"latitude": 0, "longitude": 0},
+                {"latitude": 1, "longitude": 1},
+                {"latitude": 1, "longitude": 0},
+                {"latitude": 0, "longitude": 1},
+            ],
+        )
+
+        with self.assertRaises(HTTPException) as raised:
+            create_geofence(data, db, current_user={"user_id": 4})
+
+        self.assertEqual(raised.exception.status_code, 422)
+        self.assertEqual(db.statements, [])
+
+    def test_list_geofences_returns_wkt_boundary_directly(self):
+        boundary = "POLYGON((32.4 0.2, 32.6 0.2, 32.6 0.4, 32.4 0.2))"
+        db = FakeDatabase(FakeResult(rows=[{
+            "geofence_id": 3,
+            "name": "Office",
+            "boundary": boundary,
+            "created_at": "2026-11-18 00:00:00",
+        }]))
+
+        result = list_geofences(db, current_user={"user_id": 4})
+
+        self.assertEqual(result["geofences"][0]["boundary"], boundary)
+        self.assertNotIn("ST_AsText", db.statements[0][0])
 
     def test_owner_can_delete_geofence_and_its_alerts(self):
         db = FakeDatabase(

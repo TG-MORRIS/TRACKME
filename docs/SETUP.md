@@ -6,7 +6,7 @@ stop tracking at any time.
 
 ## Requirements
 
-- MySQL with spatial data support
+- A MySQL-compatible database such as TiDB
 - Python 3.10 or newer
 - A modern browser
 
@@ -33,10 +33,17 @@ CREATE USER 'trackme_user'@'127.0.0.1' IDENTIFIED BY 'REPLACE_WITH_A_PASSWORD';
 GRANT ALL PRIVILEGES ON trackme_db.* TO 'trackme_user'@'127.0.0.1';
 ```
 
-If the database already exists, apply the missing geofence-alert table:
+If an existing database is missing the geofence-alert table, apply:
 
 ```sh
 mysql -u YOUR_MYSQL_USER -p < database/migrations/001_geofence_alerts.sql
+```
+
+If Render logs report `Unknown column 'boundary'` for `/geofences`, add the
+WKT boundary column after deploying the backend version that stores WKT text:
+
+```sh
+mysql -u YOUR_MYSQL_USER -p < database/migrations/002_geofence_boundary_text.sql
 ```
 
 ## Backend
@@ -112,12 +119,13 @@ context. Localhost is treated as secure by browsers; deployments must use HTTPS.
 The root `render.yaml` defines one Render web service. It serves the frontend
 and API from the same HTTPS origin, so the browser can use the deployed service
 URL for both. The Blueprint does not create a database: this project uses
-MySQL-specific SQL and spatial functions, so configure it with your external
-TiDB/MySQL-compatible database rather than a Render Postgres URL.
+MySQL-compatible SQL, so configure it with your external TiDB/MySQL-compatible
+database rather than a Render Postgres URL. Geofence polygons are stored as
+WKT text and processed by the API; spatial database types and functions are
+not required.
 
-1. Make sure the schema is initialized in TiDB. Check that the TiDB cluster
-   supports the spatial functions used by TRACKME, including
-   `ST_GeomFromText`, `ST_IsValid`, and `ST_Contains`.
+1. Make sure the schema is initialized in TiDB. If using an existing database
+   whose geofences table lacks `boundary`, apply the migration above.
 2. Push the project to a Git provider connected to Render, then create a
    **Blueprint** from the repository. Render reads `render.yaml`, installs
    `backend/requirements.txt`, and deploys the service.
