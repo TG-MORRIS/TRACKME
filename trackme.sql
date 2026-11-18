@@ -48,15 +48,12 @@ CREATE TABLE location_points (
     accuracy DOUBLE NULL,
     speed DOUBLE NULL,
 
-    location POINT NOT NULL SRID 4326,
-
     recorded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
     FOREIGN KEY (session_id)
         REFERENCES tracking_sessions(session_id)
         ON DELETE CASCADE,
 
-    SPATIAL INDEX idx_location (location),
     INDEX idx_location_session_time (session_id, recorded_at),
 
     CHECK (latitude BETWEEN -90 AND 90),

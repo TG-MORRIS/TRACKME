@@ -15,6 +15,7 @@ from app.main import (
     current_tracking,
     delete_geofence,
     register_user,
+    save_location,
 )
 
 
@@ -185,6 +186,34 @@ class PermissionTests(unittest.TestCase):
 
 
 class TrackingTests(unittest.TestCase):
+    def test_save_location_does_not_require_spatial_column(self):
+        db = FakeDatabase(
+            FakeResult(first={"session_id": 11}),
+            FakeResult(),
+            FakeResult(rows=[]),
+        )
+
+        result = save_location(
+            LocationCreate(
+                session_id=11,
+                latitude=0.3,
+                longitude=32.5,
+                accuracy=8,
+                speed=0,
+            ),
+            db,
+            current_user={"user_id": 4},
+        )
+
+        insert_sql, params = db.statements[1]
+        self.assertIn("INSERT INTO location_points", insert_sql)
+        self.assertNotIn("ST_SRID", insert_sql)
+        self.assertNotIn("location,", insert_sql)
+        self.assertEqual(params["latitude"], 0.3)
+        self.assertEqual(params["longitude"], 32.5)
+        self.assertEqual(result["message"], "Location recorded successfully")
+        self.assertTrue(db.committed)
+
     def test_current_tracking_returns_latest_point_and_count(self):
         db = FakeDatabase(
             FakeResult(first={

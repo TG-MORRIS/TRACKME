@@ -589,8 +589,7 @@ def save_location(
                     latitude,
                     longitude,
                     accuracy,
-                    speed,
-                    location
+                    speed
                 )
                 VALUES
                 (
@@ -598,11 +597,7 @@ def save_location(
                     :latitude,
                     :longitude,
                     :accuracy,
-                    :speed,
-                    ST_SRID(
-                        POINT(:longitude, :latitude),
-                        4326
-                    )
+                    :speed
                 )
             """),
             {
