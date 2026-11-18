@@ -93,6 +93,11 @@ before the frontend scripts load. Check `/health` on that API origin before
 registering. The frontend rejects non-JSON responses so a static-site fallback
 page cannot be mistaken for a successful API response.
 
+For a Vercel frontend with the API on Render, deploy `frontend/` as a static
+site. `frontend/js/config.js` points deployed pages at the Render API while
+leaving port-5500 local development on its local API. Set the Render API's
+`FRONTEND_ORIGINS` to the exact Vercel production origin.
+
 Open `tracking.html` to create accounts and manage GPS sharing. Each owner
 can draw and manage their own geofences, and grants access by the viewer's
 registered email. Geofences are private to their creator and only apply to
