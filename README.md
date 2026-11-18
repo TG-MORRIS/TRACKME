@@ -39,3 +39,5 @@ python -m unittest discover -s tests -v
 Browser GPS requires permission and a secure context. Localhost is secure for
 development; phones and public deployments require HTTPS with a trusted
 certificate. See the setup guide for LAN and deployment configuration.
+ 
+iV7dJrCbPuwJ7qNtA_ypJusNxTZCp638sE432flM84UgNBeUim1ScUksVkhHNO2u
