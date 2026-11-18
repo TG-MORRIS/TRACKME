@@ -46,10 +46,11 @@ async function apiRequest(endpoint, method = "GET", data = null) {
     });
 
     if (!response.headers.get("content-type")?.includes("application/json")) {
-        throw new Error(
-            `The server returned a non-JSON response (HTTP ${response.status}). ` +
-            "Check that the frontend is pointed at the TRACKME API service."
-        );
+        const message = response.status >= 500
+            ? `TRACKME API returned HTTP ${response.status}. Check the service logs in Render.`
+            : `The server returned a non-JSON response (HTTP ${response.status}). ` +
+                "Check that the frontend is pointed at the TRACKME API service.";
+        throw new Error(message);
     }
 
     const result = await response.json();
