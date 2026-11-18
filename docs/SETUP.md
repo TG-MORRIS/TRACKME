@@ -86,6 +86,13 @@ frontend origin and set `window.TRACKME_API_BASE` to the HTTPS API URL before
 loading the frontend scripts. A plain HTTP LAN address does not enable GPS on
 most phones. Do not expose MySQL to the public internet.
 
+A Render Static Site serves only the frontend; it does not run this API. Deploy
+the API as a Render Web Service and either use the combined service defined by
+`render.yaml` or set `window.TRACKME_API_BASE` to the Web Service's HTTPS origin
+before the frontend scripts load. Check `/health` on that API origin before
+registering. The frontend rejects non-JSON responses so a static-site fallback
+page cannot be mistaken for a successful API response.
+
 Open `tracking.html` to create accounts and manage GPS sharing. Each owner
 can draw and manage their own geofences, and grants access by the viewer's
 registered email. Geofences are private to their creator and only apply to
